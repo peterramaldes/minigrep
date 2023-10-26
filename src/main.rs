@@ -1,19 +1,25 @@
+use std::error::Error;
 use std::{env, fs, process};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let config = Config::build(&args).unwrap_or_else(|err| {
         println!("Problem parsing arguments: {err}");
-        process::exit(0);
+        process::exit(1);
     });
 
-    println!("Query: {}", config.query);
-    println!("File Path: {}", config.file_path);
+    if let Err(e) = run(config) {
+        println!("Error on application logic: {e}");
+        process::exit(1);
+    }
+}
 
-    let contents =
-        fs::read_to_string(config.file_path).expect("Should have been able to read the file");
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(config.file_path)?;
 
     println!("\nWith text:\n{contents}");
+
+    Ok(())
 }
 
 struct Config {
